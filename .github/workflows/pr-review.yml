@@ -1,0 +1,38 @@
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  automated-checks:
+    name: Automated checks (lint + E2E)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Start dev server (background)
+        run: npm run dev &
+        # Playwright's webServer config handles waiting, but if not configured,
+        # add a sleep or use wait-on:
+        # npx wait-on http://localhost:5173
+
+      - name: Run CI review script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .github/scripts/ci-review.sh --pr ${{ github.event.pull_request.number }}
