@@ -6,38 +6,32 @@ const MIN_ZOOM = 0.3
 const MAX_ZOOM = 3.0
 
 export default function WhiteboardCanvas({ notes, dispatch }) {
-  // Task 1.1 — viewport state
   const [viewport, setViewport] = useState({ zoom: 1, panX: 0, panY: 0 })
   const canvasRef = useRef(null)
+  const worldRef = useRef(null)
 
-  // Tasks 2.1-2.4 — scroll-wheel zoom, mouse-centered, passive:false
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     function handleWheel(e) {
-      e.preventDefault() // Task 2.4 — block native page scroll
+      e.preventDefault()
 
       setViewport(({ zoom, panX, panY }) => {
-        // Task 2.2 — clamp zoom
         const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1
         const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * factor))
-
-        // Task 2.3 — mouse-centered pan compensation
         const mouseX = e.clientX
         const mouseY = e.clientY
         const newPanX = mouseX - (mouseX - panX) * (newZoom / zoom)
         const newPanY = mouseY - (mouseY - panY) * (newZoom / zoom)
-
         return { zoom: newZoom, panX: newPanX, panY: newPanY }
       })
     }
 
-    canvas.addEventListener('wheel', handleWheel, { passive: false }) // Task 2.1
+    canvas.addEventListener('wheel', handleWheel, { passive: false })
     return () => canvas.removeEventListener('wheel', handleWheel)
   }, [])
 
-  // Task 3.1 — corrected ADD_NOTE coordinates
   function handleDoubleClick(e) {
     const { zoom, panX, panY } = viewport
     const rect = e.currentTarget.getBoundingClientRect()
@@ -50,14 +44,16 @@ export default function WhiteboardCanvas({ notes, dispatch }) {
     })
   }
 
-  function handleClick(e) {
-    if (e.target === e.currentTarget) {
-      dispatch({ type: 'DESELECT_ALL' })
-    }
+  // Bug #3 fix — StickyNote calls stopPropagation, so any click that reaches
+  // this handler comes from empty canvas space (outer div or world div).
+  function handleClick() {
+    dispatch({ type: 'DESELECT_ALL' })
   }
 
   useEffect(() => {
     function handleKeyDown(e) {
+      // Bug #1 fix — do not delete a note while the user is editing its text
+      if (document.activeElement?.isContentEditable) return
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const selected = notes.find((n) => n.selected)
         if (selected) {
@@ -79,8 +75,8 @@ export default function WhiteboardCanvas({ notes, dispatch }) {
       onDoubleClick={handleDoubleClick}
       onClick={handleClick}
     >
-      {/* Task 1.2 — CSS transform with transform-origin: 0 0 */}
       <div
+        ref={worldRef}
         style={{
           position: 'absolute',
           top: 0,
@@ -89,7 +85,6 @@ export default function WhiteboardCanvas({ notes, dispatch }) {
           transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
         }}
       >
-        {/* Task 4.1 — pass zoom/panX/panY to StickyNote */}
         {notes.map((note) => (
           <StickyNote
             key={note.id}
