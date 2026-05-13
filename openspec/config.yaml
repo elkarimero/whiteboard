@@ -1,0 +1,27 @@
+schema: spec-driven
+
+context: |
+  Tech stack: React (JavaScript), Vite, CSS Modules
+  Domain: collaborative whiteboard tool (drawing, sticky notes, shapes)
+  State management: React hooks (useState, useReducer, useContext) — no external state library
+  No backend for now — all state is local/in-memory
+  We use conventional commits (feat:, fix:, chore:, docs:, refactor:)
+  File structure follows feature-based organization under src/
+  Components are functional with hooks only — no class components
+  Canvas interactions use the HTML5 Canvas API or SVG
+
+rules:
+  proposal:
+    - Keep proposals under 400 words
+    - Always include a "Non-goals" section to keep scope tight
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Focus on user interactions (mouse events, keyboard shortcuts)
+  design:
+    - Describe component breakdown and data flow
+    - Include a section on canvas/interaction model
+    - Add sequence diagrams for complex user flows
+  tasks:
+    - Break tasks into chunks of max 2 hours
+    - Each task must be independently implementable
+    - Start with scaffolding tasks before feature tasks

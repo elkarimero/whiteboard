@@ -1,0 +1,10 @@
+.canvas {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f0f0f0;
+  background-image:
+    radial-gradient(circle, #ccc 1px, transparent 1px);
+  background-size: 24px 24px;
+  overflow: hidden;
+}
