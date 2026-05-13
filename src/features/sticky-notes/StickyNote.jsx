@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import styles from './StickyNote.module.css'
 
-export default function StickyNote({ note, dispatch }) {
+export default function StickyNote({ note, dispatch, zoom, panX, panY }) {
   const [isEditing, setIsEditing] = useState(false)
   const dragOffset = useRef(null)
   const textRef = useRef(null)
@@ -28,18 +28,20 @@ export default function StickyNote({ note, dispatch }) {
   function handleMouseDown(e) {
     if (isEditing) return
     e.preventDefault()
+    // Task 3.2 — dragOffset in world coordinates
     dragOffset.current = {
-      x: e.clientX - note.x,
-      y: e.clientY - note.y,
+      x: (e.clientX - panX) / zoom - note.x,
+      y: (e.clientY - panY) / zoom - note.y,
     }
 
     function onMouseMove(e) {
+      // Task 3.3 — position in world coordinates during drag
       dispatch({
         type: 'MOVE_NOTE',
         payload: {
           id: note.id,
-          x: e.clientX - dragOffset.current.x,
-          y: e.clientY - dragOffset.current.y,
+          x: (e.clientX - panX) / zoom - dragOffset.current.x,
+          y: (e.clientY - panY) / zoom - dragOffset.current.y,
         },
       })
     }
